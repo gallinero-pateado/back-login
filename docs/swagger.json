@@ -4,70 +4,6 @@
         "contact": {}
     },
     "paths": {
-        "/GetAllusuarios": {
-            "get": {
-                "description": "Recupera todos los registros de usuarios almacenados en la base de datos",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "usuarios"
-                ],
-                "summary": "Obtiene una lista de todos los usuarios",
-                "responses": {
-                    "200": {
-                        "description": "Lista de usuarios obtenida con éxito",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Usuario"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error al obtener los usuarios",
-                        "schema": {
-                            "$ref": "#/definitions/auth.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/Getusuario/{uid}": {
-            "get": {
-                "description": "Recupera la información de un usuario de la base de datos utilizando su UID de Firebase",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "usuarios"
-                ],
-                "summary": "Obtiene los datos de un usuario por su UID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "UID del usuario",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Datos del usuario encontrados",
-                        "schema": {
-                            "$ref": "#/definitions/models.Usuario"
-                        }
-                    },
-                    "404": {
-                        "description": "Usuario no encontrado",
-                        "schema": {
-                            "$ref": "#/definitions/auth.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/login": {
             "post": {
                 "description": "Autentica al usuario utilizando Firebase y devuelve un token",
@@ -558,50 +494,6 @@
             "properties": {
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "models.Usuario": {
-            "type": "object",
-            "properties": {
-                "Ano_Ingreso": {
-                    "type": "string"
-                },
-                "Apellidos": {
-                    "type": "string"
-                },
-                "Correo": {
-                    "type": "string"
-                },
-                "Fecha_Nacimiento": {
-                    "type": "string"
-                },
-                "Foto_Perfil": {
-                    "type": "string"
-                },
-                "Id_Estado_Usuario": {
-                    "type": "boolean"
-                },
-                "Id_carrera": {
-                    "type": "integer"
-                },
-                "Nombres": {
-                    "type": "string"
-                },
-                "PerfilCompletado": {
-                    "type": "boolean"
-                },
-                "Rol": {
-                    "type": "string"
-                },
-                "fecha_creacion": {
-                    "type": "string"
-                },
-                "firebase_usuario": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 }
             }
         }

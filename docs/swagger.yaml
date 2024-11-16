@@ -90,82 +90,9 @@ definitions:
       message:
         type: string
     type: object
-  models.Usuario:
-    properties:
-      Ano_Ingreso:
-        type: string
-      Apellidos:
-        type: string
-      Correo:
-        type: string
-      Fecha_Nacimiento:
-        type: string
-      Foto_Perfil:
-        type: string
-      Id_Estado_Usuario:
-        type: boolean
-      Id_carrera:
-        type: integer
-      Nombres:
-        type: string
-      PerfilCompletado:
-        type: boolean
-      Rol:
-        type: string
-      fecha_creacion:
-        type: string
-      firebase_usuario:
-        type: string
-      id:
-        type: integer
-    type: object
 info:
   contact: {}
 paths:
-  /GetAllusuarios:
-    get:
-      description: Recupera todos los registros de usuarios almacenados en la base
-        de datos
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Lista de usuarios obtenida con éxito
-          schema:
-            items:
-              $ref: '#/definitions/models.Usuario'
-            type: array
-        "500":
-          description: Error al obtener los usuarios
-          schema:
-            $ref: '#/definitions/auth.ErrorResponse'
-      summary: Obtiene una lista de todos los usuarios
-      tags:
-      - usuarios
-  /Getusuario/{uid}:
-    get:
-      description: Recupera la información de un usuario de la base de datos utilizando
-        su UID de Firebase
-      parameters:
-      - description: UID del usuario
-        in: path
-        name: uid
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Datos del usuario encontrados
-          schema:
-            $ref: '#/definitions/models.Usuario'
-        "404":
-          description: Usuario no encontrado
-          schema:
-            $ref: '#/definitions/auth.ErrorResponse'
-      summary: Obtiene los datos de un usuario por su UID
-      tags:
-      - usuarios
   /login:
     post:
       consumes:
