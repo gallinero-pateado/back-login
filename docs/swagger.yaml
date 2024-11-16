@@ -1,0 +1,404 @@
+definitions:
+  auth.EmailRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  auth.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResponse:
+    properties:
+      token:
+        type: string
+      uid:
+        type: string
+    type: object
+  auth.PasswordResetRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  auth.ProfileStatusResponse:
+    properties:
+      perfil_completado:
+        type: boolean
+    type: object
+  auth.RegisterRequest:
+    properties:
+      Id_carrera:
+        type: integer
+      apellidos:
+        type: string
+      email:
+        type: string
+      nombres:
+        type: string
+      password:
+        type: string
+    required:
+    - apellidos
+    - email
+    - nombres
+    - password
+    type: object
+  auth.RegisterRequest_empresa:
+    properties:
+      Email_empresa:
+        type: string
+      Nombre_empresa:
+        type: string
+      password:
+        type: string
+    required:
+    - Email_empresa
+    - Nombre_empresa
+    - password
+    type: object
+  auth.RegisterResponse:
+    properties:
+      firebase_uid:
+        type: string
+      message:
+        type: string
+    type: object
+  auth.RegisterResponse_empresa:
+    properties:
+      firebase_uid:
+        type: string
+      message:
+        type: string
+    type: object
+  auth.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  models.Usuario:
+    properties:
+      Ano_Ingreso:
+        type: string
+      Apellidos:
+        type: string
+      Correo:
+        type: string
+      Fecha_Nacimiento:
+        type: string
+      Foto_Perfil:
+        type: string
+      Id_Estado_Usuario:
+        type: boolean
+      Id_carrera:
+        type: integer
+      Nombres:
+        type: string
+      PerfilCompletado:
+        type: boolean
+      Rol:
+        type: string
+      fecha_creacion:
+        type: string
+      firebase_usuario:
+        type: string
+      id:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /GetAllusuarios:
+    get:
+      description: Recupera todos los registros de usuarios almacenados en la base
+        de datos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de usuarios obtenida con éxito
+          schema:
+            items:
+              $ref: '#/definitions/models.Usuario'
+            type: array
+        "500":
+          description: Error al obtener los usuarios
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+      summary: Obtiene una lista de todos los usuarios
+      tags:
+      - usuarios
+  /Getusuario/{uid}:
+    get:
+      description: Recupera la información de un usuario de la base de datos utilizando
+        su UID de Firebase
+      parameters:
+      - description: UID del usuario
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Datos del usuario encontrados
+          schema:
+            $ref: '#/definitions/models.Usuario'
+        "404":
+          description: Usuario no encontrado
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+      summary: Obtiene los datos de un usuario por su UID
+      tags:
+      - usuarios
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica al usuario utilizando Firebase y devuelve un token
+      parameters:
+      - description: Datos de inicio de sesión
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inicio de sesión exitoso
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+        "401":
+          description: Credenciales incorrectas
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+      summary: Inicia sesión un usuario
+      tags:
+      - auth
+  /password-reset:
+    post:
+      consumes:
+      - application/json
+      description: Permite a los usuarios recuperar su contraseña mediante un correo
+        de recuperación
+      parameters:
+      - description: Correo del usuario
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/auth.PasswordResetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Correo de recuperación enviado con éxito
+          schema:
+            $ref: '#/definitions/auth.SuccessResponse'
+        "400":
+          description: Email requerido
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+        "500":
+          description: Error al enviar el correo de recuperación
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+      summary: Envía un correo de recuperación de contraseña
+      tags:
+      - password
+  /profile-status:
+    get:
+      description: Retorna si el perfil ha sido completado o no
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Estado del perfil
+          schema:
+            $ref: '#/definitions/auth.ProfileStatusResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+        "401":
+          description: Usuario no autenticado
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+        "500":
+          description: Error interno del servidor
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+      summary: Obtener estado del perfil
+      tags:
+      - profile
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo usuario en Firebase y lo guarda en la base de datos
+        local
+      parameters:
+      - description: Datos del usuario a registrar
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuario registrado correctamente
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse'
+        "400":
+          description: Solicitud inválida
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse'
+        "500":
+          description: Error interno del servidor
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse'
+      summary: Registra un nuevo usuario
+      tags:
+      - auth
+  /register_empresa:
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo usuario en Firebase y lo guarda en la base de datos
+        local
+      parameters:
+      - description: Datos del usuario a registrar
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest_empresa'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuario registrado correctamente
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse_empresa'
+        "400":
+          description: Solicitud inválida
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse_empresa'
+        "500":
+          description: Error interno del servidor
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse_empresa'
+      summary: Registra un nuevo usuario
+      tags:
+      - auth
+  /resend-verification:
+    post:
+      consumes:
+      - application/json
+      description: Reenvía el correo de verificación a un usuario registrado
+      parameters:
+      - description: Correo del usuario
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/auth.EmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Correo de verificación enviado nuevamente
+          schema:
+            $ref: '#/definitions/auth.SuccessResponse'
+        "400":
+          description: Email requerido
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+        "404":
+          description: Usuario no encontrado
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+        "500":
+          description: Error interno del servidor
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+      summary: Reenviar correo de verificación
+      tags:
+      - verification
+  /upload-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Sube una imagen a Firebase Storage y actualiza el campo de foto
+        de perfil del usuario autenticado
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Imagen a subir
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: URL de la imagen subida y mensaje de éxito
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Error en la solicitud
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Usuario no autenticado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error al subir la imagen
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Subir una imagen de perfil
+      tags:
+      - upload
+swagger: "2.0"
