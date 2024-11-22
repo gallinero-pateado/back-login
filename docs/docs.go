@@ -15,6 +15,65 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/complete-profile": {
+            "post": {
+                "description": "Permite a los usuarios autenticados completar o actualizar su perfil, incluida la foto de perfil",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Completar o actualizar perfil de usuario",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos para actualizar el perfil",
+                        "name": "profile",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.ProfileUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Perfil actualizado correctamente",
+                        "schema": {
+                            "$ref": "#/definitions/auth.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "$ref": "#/definitions/auth.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Usuario no autenticado",
+                        "schema": {
+                            "$ref": "#/definitions/auth.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error al actualizar el perfil",
+                        "schema": {
+                            "$ref": "#/definitions/auth.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Autentica al usuario utilizando Firebase y devuelve un token",
@@ -430,6 +489,20 @@ const docTemplate = `{
             "properties": {
                 "perfil_completado": {
                     "type": "boolean"
+                }
+            }
+        },
+        "auth.ProfileUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "ano_ingreso": {
+                    "type": "string"
+                },
+                "fecha_nacimiento": {
+                    "type": "string"
+                },
+                "id_carrera": {
+                    "type": "integer"
                 }
             }
         },
