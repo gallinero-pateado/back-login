@@ -7,6 +7,7 @@ import (
 	"login/internal/models"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,8 +53,10 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
+	Email := strings.TrimSpace(strings.ToLower(req.Email))
+
 	// Autenticar con Firebase
-	token, err := SignInWithEmailAndPassword(req.Email, req.Password)
+	token, err := SignInWithEmailAndPassword(Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Credenciales incorrectas"})
 		return
@@ -61,11 +64,11 @@ func LoginHandler(c *gin.Context) {
 
 	// Buscar al usuario en la tabla Usuario
 	var usuario models.Usuario
-	result := database.DB.Where("correo = ?", req.Email).First(&usuario)
+	result := database.DB.Where("correo = ?", Email).First(&usuario)
 	if result.Error != nil {
 		// Si no encuentra el usuario en la tabla Usuario, buscar en la tabla Usuario_empresa
 		var usuarioEmpresa models.Usuario_empresa
-		resultEmpresa := database.DB.Where("correo_empresa = ?", req.Email).First(&usuarioEmpresa)
+		resultEmpresa := database.DB.Where("correo_empresa = ?", Email).First(&usuarioEmpresa)
 		if resultEmpresa.Error != nil {
 			// Si no encuentra el usuario en ninguna de las tablas, retornar error
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Usuario no encontrado"})
