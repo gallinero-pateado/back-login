@@ -142,6 +142,46 @@ paths:
       summary: Completar o actualizar perfil de usuario
       tags:
       - profile
+  /complete-profile/empresa:
+    post:
+      consumes:
+      - application/json
+      description: Permite a los usuarios autenticados completar o actualizar su perfil
+        de empresa
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Datos para actualizar el perfil
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ProfileUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Perfil actualizado correctamente
+          schema:
+            $ref: '#/definitions/auth.SuccessResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+        "401":
+          description: Usuario no autenticado
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+        "500":
+          description: Error al actualizar el perfil
+          schema:
+            $ref: '#/definitions/auth.ErrorResponse'
+      summary: Completar o actualizar perfil de usuario empresa
+      tags:
+      - profile
   /login:
     post:
       consumes:

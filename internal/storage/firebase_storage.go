@@ -57,6 +57,6 @@ func UploadFileToFirebase(file *multipart.FileHeader, bucketName string) (string
 	}
 
 	// Retornar la URL pública del archivo subido
-	url := fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, file.Filename)
+	url := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", bucketName, file.Filename)
 	return url, nil
 }
