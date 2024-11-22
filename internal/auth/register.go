@@ -43,6 +43,19 @@ func RegisterHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	//Verificar si el correo ya está registrado como empresa
+	var empresa models.Usuario_empresa
+	if result := database.DB.Where("correo_empresa = ?", req.Email).First(&empresa); result.RowsAffected > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El correo ya está registrado como empresa"})
+		return
+	}
+
+	// Verificar si el correo ya está registrado como usuario
+	var usuarioExistente models.Usuario
+	if result := database.DB.Where("correo = ?", req.Email).First(&usuarioExistente); result.RowsAffected > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "El correo ya está registrado como usuario"})
+		return
+	}
 
 	// Crear el usuario en Firebase con email y password
 	params := (&auth.UserToCreate{}).
