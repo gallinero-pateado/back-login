@@ -30,7 +30,9 @@ func SetupRoutes() *gin.Engine {
 	// Rutas protegidas
 	protected := router.Group("/").Use(auth.AuthMiddleware) // Agrupar las rutas protegidas con el middleware
 	{
-		protected.POST("/upload-image", upload.UploadImageHandler) // Ruta para subir imágenes
+		protected.POST("/complete-profile", auth.CompleteProfileHandler) // Ruta para completar perfil
+		protected.GET("/profile-status", auth.GetProfileStatusHandler)   // Ruta para obtener el estado del perfil
+		protected.POST("/upload-image", upload.UploadImageHandler)       // Ruta para subir imágenes
 	}
 
 	return router
