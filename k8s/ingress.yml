@@ -9,10 +9,10 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts: 
-    - ulink.tssw.info
+    - api-ulink.tssw.info
     secretName: cert-front-login
   rules:
-    - host: ulink.tssw.info
+    - host: api-ulink.tssw.info
       http:
         paths:
           - path: /
