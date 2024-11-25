@@ -9,13 +9,13 @@ import (
 )
 
 type ProfileUpdateRequests struct {
-	Sector              string `json:"Sector"`
-	Descripcion         string `json:"Descripcion"`
-	Direccion           string `json:"Direccion"`
-	Persona_contacto    string `json:"Persona_contacto"`
-	Correo_contacto     uint   `json:"Correo_contacto"`
-	Telefono_contacto   int    `json:"Telefono_contacto"`
-	Estado_verificacion uint   `json:"Estado_verificacion"`
+	Sector            string `json:"Sector"`
+	Descripcion       string `json:"Descripcion"`
+	Direccion         string `json:"Direccion"`
+	Persona_contacto  string `json:"Persona_contacto"`
+	Correo_contacto   string `json:"Correo_contacto"`
+	Telefono_contacto int    `json:"Telefono_contacto"`
+	Perfil_Completado bool   `json:"Perfil_Completado"`
 }
 
 // CompleteProfileEmpresaHandler permite a los usuarios completar o actualizar su perfil
@@ -48,13 +48,13 @@ func CompleteProfileEmpresaHandler(c *gin.Context) {
 	// Actualizar solo los campos no relacionados con la foto de perfil
 	var empresa models.Usuario_empresa
 	result := database.DB.Model(&empresa).Where("firebase_usuario = ?", uid).Updates(models.Usuario_empresa{
-		Sector:              req.Sector,
-		Descripcion:         req.Descripcion,
-		Direccion:           req.Direccion,
-		Persona_contacto:    req.Persona_contacto,
-		Correo_contacto:     req.Correo_contacto,
-		Telefono_contacto:   req.Telefono_contacto,
-		Estado_verificacion: 1,
+		Sector:            req.Sector,
+		Descripcion:       req.Descripcion,
+		Direccion:         req.Direccion,
+		Persona_contacto:  req.Persona_contacto,
+		Correo_contacto:   req.Correo_contacto,
+		Telefono_contacto: req.Telefono_contacto,
+		Perfil_Completado: true,
 	})
 
 	if result.Error != nil {

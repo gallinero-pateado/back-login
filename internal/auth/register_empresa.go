@@ -71,6 +71,7 @@ func RegisterHandler_empresa(c *gin.Context) {
 	usuario_empresa := models.Usuario_empresa{
 		Correo_empresa:           req.Email_empresa,
 		Nombre_empresa:           req.Nombre_empresa,
+		Perfil_Completado:        false,
 		Firebase_usuario_empresa: user.UID,
 		Rol:                      "empresa", // Rol por defecto
 	}
