@@ -1,0 +1,59 @@
+name: "Build and Deploy to GKE Test"
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: autopilot-cluster-ulink
+  GKE_ZONE: us-central1
+  NOMBRE_IMAGEN: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-ulink/${{ github.event.repository.name }}:${{ github.sha }}
+
+jobs:
+  build_publish_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Autenticarse con gcloud CLI
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GKE_SA_KEY }}
+
+      - name: Configurar gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configurar Docker para Autenticación
+        run: gcloud --quiet auth configure-docker
+
+      - name: Obtener credenciales de GKE para deployar al cluster
+        uses: google-github-actions/get-gke-credentials@db150f2cc60d1716e61922b832eae71d2a45938f
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+
+      - name: Autenticar, Construir y Subir imagen de docker
+        run: |
+          gcloud --quiet auth configure-docker us-central1-docker.pkg.dev
+          docker build -t ${{ env.NOMBRE_IMAGEN }} .
+          docker push ${{ env.NOMBRE_IMAGEN }}
+
+      - name: Reemplazar imagen en deployment.yml
+        run: |
+          sed -i "s|<IMAGE>|${{ env.NOMBRE_IMAGEN }}|g" k8s/deployment.yml
+          cat k8s/deployment.yml
+
+      - name: Aplicar Deployment
+        run: kubectl apply -f k8s/deployment.yml
+
+      - name: Aplicar Service
+        run: kubectl apply -f k8s/service.yml
+
+      - name: Aplicar Ingress
+        run: kubectl apply -f k8s/ingress.yml
