@@ -16,8 +16,11 @@ COPY . .
 # Compila el codigo
 RUN go build -o main .
 
-# Etapa de producción
-FROM alpine:latest
+# Imagen final
+FROM golang:1.23
+
+# Establece el directorio de trabajo en el contenedor final
+WORKDIR /app
 
 # Copia el binario compilado desde la etapa de construcción
 COPY --from=build /app/main .
