@@ -35,7 +35,7 @@ type RegisterResponse struct {
 // @Success 200 {object} RegisterResponse "Usuario registrado correctamente"
 // @Failure 400 {object} RegisterResponse "Solicitud inválida"
 // @Failure 500 {object} RegisterResponse "Error interno del servidor"
-// @Router /register [post]
+// @Router /register/user [post]
 // RegisterHandler maneja el registro del usuario
 func RegisterHandler(c *gin.Context) {
 	var req RegisterRequest
