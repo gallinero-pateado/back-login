@@ -34,7 +34,7 @@ func SendVerificationEmail(email, token string) error {
 	to := email
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
-	baseURL := "https://api-ulink.tss.info"
+	baseURL := "https://api-ulink.tssw.info"
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 	msg := []byte("Subject: Verificación de correo\n\nPor favor verifica tu correo haciendo clic en el siguiente enlace:\n" +
 		baseURL + "/verify-email?token=" + token)
