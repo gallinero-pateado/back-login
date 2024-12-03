@@ -35,6 +35,11 @@ definitions:
     required:
     - email
     type: object
+  auth.ProfileStatusResponse:
+    properties:
+      perfil_completado:
+        type: boolean
+    type: object
   auth.ProfileUpdateRequest:
     properties:
       ano_ingreso:
@@ -268,6 +273,68 @@ paths:
       summary: Envía un correo de recuperación de contraseña
       tags:
       - password
+  /profile-status:
+    get:
+      description: Retorna si el perfil ha sido completado o no
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Estado del perfil
+          schema:
+            $ref: '#/definitions/auth.ProfileStatusResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            type: string
+        "401":
+          description: Usuario no autenticado
+          schema:
+            type: string
+        "500":
+          description: Error interno del servidor
+          schema:
+            type: string
+      summary: Obtener estado del perfil
+      tags:
+      - profile
+  /profile-status-empresa:
+    get:
+      description: Retorna si el perfil ha sido completado o no
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Estado del perfil
+          schema:
+            $ref: '#/definitions/auth.ProfileStatusResponse'
+        "400":
+          description: Datos inválidos
+          schema:
+            type: string
+        "401":
+          description: Usuario no autenticado
+          schema:
+            type: string
+        "500":
+          description: Error interno del servidor
+          schema:
+            type: string
+      summary: Obtener estado del perfil
+      tags:
+      - profile
   /register/user:
     post:
       consumes:

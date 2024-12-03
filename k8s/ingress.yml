@@ -10,7 +10,7 @@ spec:
   tls:
   - hosts: 
     - api-ulink.tssw.info
-    secretName: cert-front-login
+    secretName: cert-back-login
   rules:
     - host: api-ulink.tssw.info
       http:

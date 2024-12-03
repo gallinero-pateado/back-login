@@ -8,5 +8,6 @@ Para correr el programa debe ejecutarse el codigo debemos tener en cuenta 2 cosa
     -go run . 
 ademas se agrego el Swagger para mayor facilidad, el cual esta en la siguiente direccion: 
     http://localhost:8080/swagger/index.html
+Tener en cuenta que en el punto env hay una variable llama URL esta debe cambiarse si es necesario dado que actualmente esta en  http://localhost:8080 
 
 @JaimeFigueroaP22
