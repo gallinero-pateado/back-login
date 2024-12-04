@@ -3,7 +3,7 @@ name: "Build and Deploy to GKE Test"
 on:
   push:
     branches:
-      - main
+      - hotfix
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
