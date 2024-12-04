@@ -10,14 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// RegisterRequest estructura de los datos recibidos
+// RegisterRequest_empresa estructura de los datos recibidos
 type RegisterRequest_empresa struct {
 	Email_empresa  string `json:"Email_empresa" binding:"required"`
 	Password       string `json:"password" binding:"required"`
 	Nombre_empresa string `json:"Nombre_empresa" binding:"required"`
 }
 
-// RegisterResponse estructura de la respuesta de registro
+// RegisterResponse_empresa estructura de la respuesta de registro
 type RegisterResponse_empresa struct {
 	Message     string `json:"message"`
 	FirebaseUID string `json:"firebase_uid"`
@@ -34,7 +34,6 @@ type RegisterResponse_empresa struct {
 // @Failure 400 {object} RegisterResponse_empresa "Solicitud inválida"
 // @Failure 500 {object} RegisterResponse_empresa "Error interno del servidor"
 // @Router /register_empresa [post]
-// RegisterHandler maneja el registro del usuario
 func RegisterHandler_empresa(c *gin.Context) {
 	var req RegisterRequest_empresa
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -44,14 +43,28 @@ func RegisterHandler_empresa(c *gin.Context) {
 
 	// Verificar si el correo ya está registrado como usuario
 	var usuario models.Usuario
-	if result := database.DB.Where("correo = ?", req.Email_empresa).First(&usuario); result.RowsAffected > 0 {
+	if result := database.DB.Where("correo = ?", req.Email_empresa).First(&usuario); result.Error != nil {
+		if result.Error.Error() != "record not found" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al verificar si el correo está registrado como usuario"})
+			return
+		}
+	}
+
+	if usuario.Id > 0 { // Usar la variable usuario correctamente
 		c.JSON(http.StatusBadRequest, gin.H{"error": "El correo ya está registrado como usuario"})
 		return
 	}
 
 	// Verificar si el correo ya está registrado como empresa
 	var empresa models.Usuario_empresa
-	if result := database.DB.Where("correo_empresa = ?", req.Email_empresa).First(&empresa); result.RowsAffected > 0 {
+	if result := database.DB.Where("correo_empresa = ?", req.Email_empresa).First(&empresa); result.Error != nil {
+		if result.Error.Error() != "record not found" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al verificar si el correo está registrado como empresa"})
+			return
+		}
+	}
+
+	if empresa.Id_empresa > 0 { // Usar la variable empresa correctamente
 		c.JSON(http.StatusBadRequest, gin.H{"error": "El correo ya está registrado como empresa"})
 		return
 	}
@@ -76,8 +89,7 @@ func RegisterHandler_empresa(c *gin.Context) {
 		Rol:                      "empresa", // Rol por defecto
 	}
 
-	result := database.DB.Create(&usuario_empresa)
-	if result.Error != nil {
+	if result := database.DB.Create(&usuario_empresa); result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al guardar el usuario en la base de datos"})
 		return
 	}

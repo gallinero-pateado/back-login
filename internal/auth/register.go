@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 	"login/internal/database"
 	"login/internal/models"
 	"net/http"
@@ -36,23 +37,39 @@ type RegisterResponse struct {
 // @Failure 400 {object} RegisterResponse "Solicitud inválida"
 // @Failure 500 {object} RegisterResponse "Error interno del servidor"
 // @Router /register/user [post]
-// RegisterHandler maneja el registro del usuario
 func RegisterHandler(c *gin.Context) {
 	var req RegisterRequest
+	// Validar los datos recibidos
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("Error al procesar JSON: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos inválidos: " + err.Error()})
 		return
 	}
-	//Verificar si el correo ya está registrado como empresa
+
+	// Verificar si el correo ya está registrado como empresa
 	var empresa models.Usuario_empresa
-	if result := database.DB.Where("correo_empresa = ?", req.Email).First(&empresa); result.RowsAffected > 0 {
+	if result := database.DB.Where("correo_empresa = ?", req.Email).First(&empresa); result.Error != nil {
+		if result.Error.Error() != "record not found" {
+			log.Printf("Error al verificar empresa: %v", result.Error)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al verificar empresa en la base de datos"})
+			return
+		}
+	}
+	if empresa.Id_empresa > 0 { // Usar la variable empresa correctamente
 		c.JSON(http.StatusBadRequest, gin.H{"error": "El correo ya está registrado como empresa"})
 		return
 	}
 
 	// Verificar si el correo ya está registrado como usuario
 	var usuarioExistente models.Usuario
-	if result := database.DB.Where("correo = ?", req.Email).First(&usuarioExistente); result.RowsAffected > 0 {
+	if result := database.DB.Where("correo = ?", req.Email).First(&usuarioExistente); result.Error != nil {
+		if result.Error.Error() != "record not found" {
+			log.Printf("Error al verificar usuario existente: %v", result.Error)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al verificar usuario en la base de datos"})
+			return
+		}
+	}
+	if usuarioExistente.Id > 0 { // Usar la variable usuarioExistente correctamente
 		c.JSON(http.StatusBadRequest, gin.H{"error": "El correo ya está registrado como usuario"})
 		return
 	}
@@ -64,6 +81,7 @@ func RegisterHandler(c *gin.Context) {
 
 	user, err := authClient.CreateUser(context.Background(), params)
 	if err != nil {
+		log.Printf("Error al crear usuario en Firebase: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al crear usuario en Firebase: " + err.Error()})
 		return
 	}
@@ -74,12 +92,13 @@ func RegisterHandler(c *gin.Context) {
 		Nombres:          req.Nombres,
 		Apellidos:        req.Apellidos,
 		Firebase_usuario: user.UID,
-		Id_carrera:       1,
-		Rol:              "estudiante", // Rol por defecto
+		Id_carrera:       req.Id_carrera, // Se toma el valor proporcionado en la solicitud
+		Rol:              "estudiante",   // Rol por defecto
 	}
 
-	result := database.DB.Create(&usuario)
-	if result.Error != nil {
+	// Guardar usuario en la base de datos
+	if result := database.DB.Create(&usuario); result.Error != nil {
+		log.Printf("Error al guardar el usuario en la base de datos: %v", result.Error)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al guardar el usuario en la base de datos"})
 		return
 	}
@@ -87,6 +106,7 @@ func RegisterHandler(c *gin.Context) {
 	// Generar token de verificación de correo
 	token, err := GenerateVerificationToken(req.Email)
 	if err != nil {
+		log.Printf("Error al generar el token de verificación: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al generar el token de verificación"})
 		return
 	}
@@ -94,6 +114,7 @@ func RegisterHandler(c *gin.Context) {
 	// Enviar correo de verificación
 	err = SendVerificationEmail(req.Email, token)
 	if err != nil {
+		log.Printf("Error al enviar el correo de verificación: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al enviar el correo de verificación"})
 		return
 	}

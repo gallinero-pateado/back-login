@@ -34,16 +34,16 @@ func SendVerificationEmail(email, token string) error {
 	to := email
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
-	baseURL := "https://api-ulink.tssw.info"
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 	msg := []byte("Subject: Verificación de correo\n\nPor favor verifica tu correo haciendo clic en el siguiente enlace:\n" +
-		baseURL + "/verify-email?token=" + token)
+		"https://ulink.tssw.info//verify-email?token=" + token)
 
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{to}, msg)
 
 	return err
 }
 
+// Función para verificar el correo
 func VerifyEmailHandler(c *gin.Context) {
 	tokenString := c.Query("token")
 
@@ -61,14 +61,38 @@ func VerifyEmailHandler(c *gin.Context) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		email := claims["email"].(string)
 
-		// Actualizar el estado de validación en la base de datos
+		// Primero, intentar actualizar el estado de verificación en la tabla de usuario
 		var usuario models.Usuario
-		result := database.DB.Model(&usuario).Where("correo = ?", email).Update("Id_estado_usuario", true)
-		if result.Error != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar el estado del usuario"})
+		resultUsuario := database.DB.Model(&usuario).Where("correo = ?", email).Update("Id_estado_usuario", true)
+		if resultUsuario.Error != nil {
+			// Si no se encuentra el usuario, intentar con la empresa
+			var empresa models.Usuario_empresa
+			resultEmpresa := database.DB.Model(&empresa).Where("correo_contacto = ?", email).Update("Estado_verificacion", '1')
+			if resultEmpresa.Error != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar el estado del usuario o empresa"})
+				return
+			}
+
+			// Si la empresa fue actualizada correctamente
+			// Buscar el usuario en Firebase (para la empresa)
+			userRecord, err := authClient.GetUserByEmail(context.Background(), email)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener usuario de Firebase"})
+				return
+			}
+
+			// Actualizar el estado del correo como verificado en Firebase
+			_, err = authClient.UpdateUser(context.Background(), userRecord.UID, (&auth.UserToUpdate{}).EmailVerified(true))
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar el estado de verificación en Firebase"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{"message": "Correo verificado exitosamente para empresa. Perfil activado."})
 			return
 		}
 
+		// Si el usuario fue actualizado correctamente
 		// Buscar el usuario en Firebase
 		userRecord, err := authClient.GetUserByEmail(context.Background(), email)
 		if err != nil {
@@ -83,7 +107,7 @@ func VerifyEmailHandler(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "Correo verificado exitosamente. Perfil activado."})
+		c.JSON(http.StatusOK, gin.H{"message": "Correo verificado exitosamente para usuario. Perfil activado."})
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Token inválido o expirado"})
 	}
