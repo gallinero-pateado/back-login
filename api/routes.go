@@ -23,7 +23,7 @@ func SetupRoutes() *gin.Engine {
 	}))
 
 	router.POST("/register/user", auth.RegisterHandler)
-	router.POST("/login-user", auth.UserLoginHandler)
+	router.POST("/login/user", auth.UserLoginHandler)
 	router.POST("/register_empresa", auth.RegisterHandler_empresa)
 	router.POST("/login/company", auth.CompanyLoginHandler)
 	router.GET("/verify-email", auth.VerifyEmailHandler)
