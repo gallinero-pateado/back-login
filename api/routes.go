@@ -18,11 +18,6 @@ func SetupRoutes() *gin.Engine {
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Authorization", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length", "Authorization"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			// Permitir cualquier origen para propósitos de desarrollo
-			return true
-		},
 		MaxAge: 12 * time.Hour,
 	}))
 
