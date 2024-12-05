@@ -3,6 +3,7 @@ package api
 import (
 	"login/internal/auth"
 	"login/internal/upload"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -13,11 +14,16 @@ func SetupRoutes() *gin.Engine {
 
 	// Configurar CORS
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost", "https://practicas.tssw.info", "https://descuentos.tssw.info", "https://roomies.tssw.info", "https://ulink.tssw.info", "https://api-ulink.tssw.info"}, // Cambia el puerto si es necesario
+		AllowOrigins:     []string{"http://localhost", "https://practicas.tssw.info", "https://descuentos.tssw.info", "https://roomies.tssw.info", "https://ulink.tssw.info"}, // Cambia el puerto si es necesario
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Authorization", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length", "Authorization"},
 		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			// Permitir cualquier origen para propósitos de desarrollo
+			return true
+		},
+		MaxAge: 12 * time.Hour,
 	}))
 
 	router.POST("/register/user", auth.RegisterHandler)
